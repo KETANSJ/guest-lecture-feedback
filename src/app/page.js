@@ -100,6 +100,21 @@ export default function Home() {
             Submit Feedback
           </button>
         </form>
+
+        {/* 🔐 Admin Login Link */}
+        <div style={{ marginTop: "15px", textAlign: "center" }}>
+          <a
+            href="/admin/login"
+            style={{
+              color: "#2563eb",
+              textDecoration: "underline",
+              fontWeight: "500",
+            }}
+          >
+            Admin Login
+          </a>
+        </div>
+
       </div>
     </div>
   );

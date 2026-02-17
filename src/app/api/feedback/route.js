@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-/* ✅ GET – browser test साठी */
+/* ✅ GET – browser test  */
 export async function GET() {
   return NextResponse.json({
     status: "ok",
@@ -9,7 +9,7 @@ export async function GET() {
   });
 }
 
-/* ✅ POST – form submit साठी */
+/* ✅ POST – form submit  */
 export async function POST(req) {
   try {
     const body = await req.json();
