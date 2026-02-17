@@ -8,9 +8,11 @@ export default function AdminLogin() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -18,7 +20,8 @@ export default function AdminLogin() {
     });
 
     if (error) {
-      alert("चुकीचा Email किंवा Password ❌");
+      alert("Invalid email or password ❌");
+      setLoading(false);
     } else {
       alert("Login Successful ✅");
       router.push("/admin/dashboard");
@@ -49,8 +52,8 @@ export default function AdminLogin() {
             style={styles.input}
           />
 
-          <button type="submit" style={styles.button}>
-            Login
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>
@@ -65,25 +68,29 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     background: "#f3f4f6",
+    padding: "20px",
   },
   card: {
     background: "#ffffff",
     padding: "30px",
-    borderRadius: "10px",
-    width: "350px",
+    borderRadius: "12px",
+    width: "100%",
+    maxWidth: "400px",
     boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
   },
   title: {
     textAlign: "center",
-    marginBottom: "20px",
+    marginBottom: "25px",
     color: "#2563eb",
+    fontSize: "22px",
   },
   input: {
     width: "100%",
-    padding: "10px",
+    padding: "12px",
     marginBottom: "15px",
-    borderRadius: "6px",
+    borderRadius: "8px",
     border: "1px solid #cbd5e1",
+    fontSize: "14px",
   },
   button: {
     width: "100%",
@@ -91,7 +98,8 @@ const styles = {
     background: "#2563eb",
     color: "#ffffff",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
+    fontSize: "15px",
   },
 };

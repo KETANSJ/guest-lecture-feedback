@@ -25,17 +25,26 @@ export default function Dashboard() {
     fetchRatings();
   }, []);
 
+  // 🔐 Check Login Session
   const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) router.push("/admin/login");
+    const { data, error } = await supabase.auth.getUser();
+
+    if (error || !data?.user) {
+      await supabase.auth.signOut();
+      router.push("/admin/login");
+    }
   };
 
+  // 📊 Fetch Feedback Data
   const fetchRatings = async () => {
-    const { data, error } = await supabase.from("feedback").select("*");
+    const { data, error } = await supabase
+      .from("feedback")
+      .select("*");
 
     if (error) return;
 
     setAllFeedback(data);
+
     const total = data.length;
     setTotalCount(total);
 
@@ -65,64 +74,67 @@ export default function Dashboard() {
     setData(chartData);
   };
 
+  // 🚪 Logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/admin/login");
   };
 
-  return (
-    <div style={{ padding: "20px", maxWidth: "1200px", margin: "auto" }}>
-      <h2 style={{ textAlign: "center" }}>Admin Rating Analytics</h2>
+  // 📥 Export CSV (WORKING)
+  const exportCSV = () => {
+    if (allFeedback.length === 0) {
+      alert("No feedback data available.");
+      return;
+    }
 
-      <h3 style={{ textAlign: "center" }}>
+    const headers = ["Student", "Topic", "Speaker", "Rating", "Comment"];
+
+    const rows = allFeedback.map((item) => [
+      item.student,
+      item.lecture,
+      item.speaker,
+      item.rating,
+      item.comment,
+    ]);
+
+    let csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.href = encodedUri;
+    link.download = "feedback.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div style={styles.container}>
+      <h2 style={styles.title}>Admin Rating Analytics</h2>
+
+      <h3 style={styles.total}>
         Total Feedback: {totalCount}
       </h3>
 
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        gap: "15px",
-        marginBottom: "20px",
-        flexWrap: "wrap"
-      }}>
-        <button
-          style={{
-            padding: "8px 15px",
-            background: "#3b82f6",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
+      {/* Buttons */}
+      <div style={styles.buttonWrapper}>
+        <button style={styles.exportBtn} onClick={exportCSV}>
           Export CSV
         </button>
 
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: "8px 15px",
-            background: "#ef4444",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
+        <button style={styles.logoutBtn} onClick={handleLogout}>
           Logout
         </button>
       </div>
 
       {/* Responsive Layout */}
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "40px"
-      }}>
+      <div style={styles.layout}>
 
         {/* Pie Chart */}
-        <div style={{ width: "100%", height: "350px" }}>
-          <ResponsiveContainer>
+        <div style={styles.chartBox}>
+          <ResponsiveContainer width="100%" height={350}>
             <PieChart>
               <Pie
                 data={data}
@@ -149,20 +161,11 @@ export default function Dashboard() {
         </div>
 
         {/* Feedback List */}
-        <div>
+        <div style={styles.feedbackBox}>
           <h3>All Student Feedback</h3>
 
           {allFeedback.map((item, index) => (
-            <div
-              key={index}
-              style={{
-                background: "#ffffff",
-                padding: "15px",
-                marginBottom: "15px",
-                borderRadius: "10px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-              }}
-            >
+            <div key={index} style={styles.card}>
               <strong>{item.student}</strong>
               <p><strong>Topic:</strong> {item.lecture}</p>
               <p><strong>Speaker:</strong> {item.speaker}</p>
@@ -176,3 +179,58 @@ export default function Dashboard() {
     </div>
   );
 }
+
+const styles = {
+  container: {
+    padding: "20px",
+    maxWidth: "1200px",
+    margin: "auto",
+  },
+  title: {
+    textAlign: "center",
+  },
+  total: {
+    textAlign: "center",
+  },
+  buttonWrapper: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "15px",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+  },
+  exportBtn: {
+    padding: "8px 15px",
+    background: "#3b82f6",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+  logoutBtn: {
+    padding: "8px 15px",
+    background: "#ef4444",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+  layout: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "40px",
+  },
+  chartBox: {
+    width: "100%",
+  },
+  feedbackBox: {
+    width: "100%",
+  },
+  card: {
+    background: "#ffffff",
+    padding: "15px",
+    marginBottom: "15px",
+    borderRadius: "10px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  },
+};
