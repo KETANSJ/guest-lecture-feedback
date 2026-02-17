@@ -9,6 +9,7 @@ import {
   Cell,
   Tooltip,
   Legend,
+  ResponsiveContainer,
 } from "recharts";
 
 const COLORS = ["#ef4444", "#f97316", "#eab308", "#3b82f6", "#22c55e"];
@@ -26,27 +27,19 @@ export default function Dashboard() {
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/admin/login");
-    }
+    if (!user) router.push("/admin/login");
   };
 
   const fetchRatings = async () => {
-    const { data, error } = await supabase
-      .from("feedback")
-      .select("*");
+    const { data, error } = await supabase.from("feedback").select("*");
 
-    if (error) {
-      console.log(error);
-      return;
-    }
+    if (error) return;
 
     setAllFeedback(data);
-
     const total = data.length;
     setTotalCount(total);
 
-    const allRatings = {
+    const ratings = {
       "1 - Poor": 0,
       "2 - Average": 0,
       "3 - Good": 0,
@@ -55,20 +48,17 @@ export default function Dashboard() {
     };
 
     data.forEach((item) => {
-      if (allRatings[item.rating] !== undefined) {
-        allRatings[item.rating]++;
+      if (ratings[item.rating] !== undefined) {
+        ratings[item.rating]++;
       }
     });
 
-    const chartData = Object.keys(allRatings).map((key) => {
-      const count = allRatings[key];
-      const percentage =
-        total > 0 ? Math.round((count / total) * 100) : 0;
-
+    const chartData = Object.keys(ratings).map((key) => {
+      const count = ratings[key];
       return {
         name: key,
-        count: count,
-        percentage: percentage,
+        count,
+        percentage: total > 0 ? Math.round((count / total) * 100) : 0,
       };
     });
 
@@ -80,52 +70,29 @@ export default function Dashboard() {
     router.push("/admin/login");
   };
 
-  const exportCSV = () => {
-    const headers = ["Student", "Topic", "Speaker", "Rating", "Comment"];
-
-    const rows = allFeedback.map((item) => [
-      item.student,
-      item.lecture,
-      item.speaker,
-      item.rating,
-      item.comment,
-    ]);
-
-    let csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers, ...rows].map((e) => e.join(",")).join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "feedback.csv");
-    document.body.appendChild(link);
-    link.click();
-  };
-
   return (
-    <div style={{ padding: "40px" }}>
-      <h2 style={{ textAlign: "center" }}>
-        Admin Rating Analytics
-      </h2>
+    <div style={{ padding: "20px", maxWidth: "1200px", margin: "auto" }}>
+      <h2 style={{ textAlign: "center" }}>Admin Rating Analytics</h2>
 
-      {/* Only Total Feedback */}
-      <div style={{ textAlign: "center", marginTop: "20px" }}>
-        <h3>Total Feedback: {totalCount}</h3>
-      </div>
+      <h3 style={{ textAlign: "center" }}>
+        Total Feedback: {totalCount}
+      </h3>
 
-      {/* Buttons */}
-      <div style={{ textAlign: "right", marginBottom: "20px" }}>
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        gap: "15px",
+        marginBottom: "20px",
+        flexWrap: "wrap"
+      }}>
         <button
-          onClick={exportCSV}
           style={{
             padding: "8px 15px",
             background: "#3b82f6",
             color: "#fff",
             border: "none",
             borderRadius: "6px",
-            cursor: "pointer",
-            marginRight: "10px",
+            cursor: "pointer"
           }}
         >
           Export CSV
@@ -139,44 +106,50 @@ export default function Dashboard() {
             color: "#fff",
             border: "none",
             borderRadius: "6px",
-            cursor: "pointer",
+            cursor: "pointer"
           }}
         >
           Logout
         </button>
       </div>
 
-      <div style={{ display: "flex", gap: "40px" }}>
+      {/* Responsive Layout */}
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "40px"
+      }}>
 
         {/* Pie Chart */}
-        <div style={{ flex: 1 }}>
-          <PieChart width={450} height={450}>
-            <Pie
-              data={data}
-              dataKey="count"
-              nameKey="name"
-              outerRadius={170}
-              label={({ name, count }) =>
-                count > 0 ? `${name} (${count})` : ""
-              }
-            >
-              {data.map((entry, index) => (
-                <Cell key={index} fill={COLORS[index]} />
-              ))}
-            </Pie>
+        <div style={{ width: "100%", height: "350px" }}>
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="count"
+                nameKey="name"
+                outerRadius={120}
+                label={({ name, count }) =>
+                  count > 0 ? `${name} (${count})` : ""
+                }
+              >
+                {data.map((entry, index) => (
+                  <Cell key={index} fill={COLORS[index]} />
+                ))}
+              </Pie>
 
-            <Tooltip
-              formatter={(value, name, props) =>
-                `${props.payload.count} Students (${props.payload.percentage}%)`
-              }
-            />
-
-            <Legend />
-          </PieChart>
+              <Tooltip
+                formatter={(value, name, props) =>
+                  `${props.payload.count} Students (${props.payload.percentage}%)`
+                }
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
 
         {/* Feedback List */}
-        <div style={{ flex: 1 }}>
+        <div>
           <h3>All Student Feedback</h3>
 
           {allFeedback.map((item, index) => (
@@ -190,16 +163,11 @@ export default function Dashboard() {
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <strong>{item.student}</strong>
-                <span>{item.rating}</span>
-              </div>
-
-              <div style={{ marginTop: "8px", fontSize: "14px" }}>
-                <p><strong>Topic:</strong> {item.lecture}</p>
-                <p><strong>Speaker:</strong> {item.speaker}</p>
-                <p><strong>Comment:</strong> {item.comment}</p>
-              </div>
+              <strong>{item.student}</strong>
+              <p><strong>Topic:</strong> {item.lecture}</p>
+              <p><strong>Speaker:</strong> {item.speaker}</p>
+              <p><strong>Rating:</strong> {item.rating}</p>
+              <p><strong>Comment:</strong> {item.comment}</p>
             </div>
           ))}
         </div>

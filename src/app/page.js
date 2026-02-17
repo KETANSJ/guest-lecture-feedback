@@ -101,20 +101,11 @@ export default function Home() {
           </button>
         </form>
 
-        {/* 🔐 Admin Login Link */}
-        <div style={{ marginTop: "15px", textAlign: "center" }}>
-          <a
-            href="/admin/login"
-            style={{
-              color: "#2563eb",
-              textDecoration: "underline",
-              fontWeight: "500",
-            }}
-          >
+        <div style={styles.adminLink}>
+          <a href="/admin/login" style={styles.link}>
             Admin Login
           </a>
         </div>
-
       </div>
     </div>
   );
@@ -127,44 +118,56 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     background: "#f2f4f8",
+    padding: "20px",
   },
   card: {
     background: "#fff",
-    padding: "30px",
-    borderRadius: "12px",
-    width: "380px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+    padding: "25px",
+    borderRadius: "14px",
+    width: "100%",
+    maxWidth: "450px",
+    boxShadow: "0 15px 30px rgba(0,0,0,0.1)",
   },
   title: {
     textAlign: "center",
-    marginBottom: "20px",
+    marginBottom: "22px",
     color: "#2563eb",
+    fontSize: "clamp(20px, 3vw, 26px)",
   },
   input: {
     width: "100%",
-    padding: "10px",
-    marginBottom: "12px",
-    borderRadius: "6px",
+    padding: "12px",
+    marginBottom: "15px",
+    borderRadius: "8px",
     border: "1px solid #cbd5e1",
-    fontSize: "14px",
+    fontSize: "clamp(14px, 2.5vw, 16px)",
   },
   textarea: {
     width: "100%",
-    padding: "10px",
-    marginBottom: "15px",
-    borderRadius: "6px",
+    padding: "12px",
+    marginBottom: "18px",
+    borderRadius: "8px",
     border: "1px solid #cbd5e1",
-    minHeight: "80px",
-    fontSize: "14px",
+    minHeight: "100px",
+    fontSize: "clamp(14px, 2.5vw, 16px)",
   },
   button: {
     width: "100%",
-    padding: "12px",
+    padding: "14px",
     background: "#2563eb",
     color: "#fff",
     border: "none",
     borderRadius: "8px",
     fontSize: "16px",
     cursor: "pointer",
+  },
+  adminLink: {
+    marginTop: "18px",
+    textAlign: "center",
+  },
+  link: {
+    color: "#2563eb",
+    textDecoration: "underline",
+    fontWeight: "500",
   },
 };
